@@ -1,13 +1,17 @@
+from socket import socket
+
 from flask import Flask, jsonify, request, send_file, render_template
 from repository.database import db
 from models.payment import Payment
 from datetime import datetime, timedelta
 from payments.pix import Pix
+from flask_socketio import SocketIO
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.sqlite'
 app.config['SECRET_KEY'] = 'SECRET_KEY'
 db.init_app(app)
+socketio = SocketIO(app)
 
 @app.route('/payments/pix', methods=['POST'])
 def create_payment_pix():
@@ -22,8 +26,8 @@ def create_payment_pix():
     new_payment.qrcode = data_payment_pix['qrcode_path']
     db.session.add(new_payment)
     db.session.commit()
-    return jsonify({"message": "The payment has been created", "payment":
-        new_payment.to_dict()})
+    return jsonify({"message": "The payment has been created",
+                    "payment": new_payment.to_dict()})
 
 @app.route('/payments/pix/qrcode/<filename>', methods=['GET'])
 def get_image(filename):
@@ -42,5 +46,9 @@ def payment_pix_page(payment_id):
                            host="http://127.0.0.1:5000",
                            qrcode=payment.qrcode)
 
+@socketio.on('connect')
+def handle_connect():
+    print("Client Connected to the server")
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    socketio.run(app)

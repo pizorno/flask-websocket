@@ -70,6 +70,20 @@ async = ["asgiref (>=3.2)"]
 dotenv = ["python-dotenv"]
 
 [[package]]
+name = "flask-cors"
+version = "5.0.0"
+description = "A Flask extension adding a decorator for CORS support"
+optional = false
+python-versions = "*"
+files = [
+    {file = "Flask_Cors-5.0.0-py2.py3-none-any.whl", hash = "sha256:b9e307d082a9261c100d8fb0ba909eec6a228ed1b60a8315fd85f783d61910bc"},
+    {file = "flask_cors-5.0.0.tar.gz", hash = "sha256:5aadb4b950c4e93745034594d9f3ea6591f734bb3662e16e255ffbf5e89c88ef"},
+]
+
+[package.dependencies]
+Flask = ">=0.9"
+
+[[package]]
 name = "flask-socketio"
 version = "5.4.1"
 description = "Socket.IO integration for Flask applications"
@@ -518,4 +532,4 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.13"
-content-hash = "afa121bbf902b9640e5618d10e46d17ef344643a64989626c2131acc52c9ea6d"
+content-hash = "b96a8ff0ca0d0e6f39f62856eba9553748c155c837b8837bc80eb662c2b4c1a3"

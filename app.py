@@ -1,6 +1,7 @@
 from socket import socket
 
 from flask import Flask, jsonify, request, send_file, render_template
+from flask_cors import CORS, cross_origin
 from repository.database import db
 from models.payment import Payment
 from datetime import datetime, timedelta
@@ -8,6 +9,7 @@ from payments.pix import Pix
 from flask_socketio import SocketIO
 
 app = Flask(__name__)
+CORS(app, support_credentials=True)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.sqlite'
 app.config['SECRET_KEY'] = 'SECRET_KEY'
 db.init_app(app)
@@ -34,6 +36,7 @@ def get_image(filename):
     return send_file(f"static/img/{filename}.png", mimetype='img/png')
 
 @app.route('/payments/pix/confirmation', methods=['POST'])
+@cross_origin(supports_credentials=True)
 def pix_confirmation():
     data = request.get_json()
     if "bank_payment_id" not in data and "value" not in data:
@@ -46,11 +49,19 @@ def pix_confirmation():
         return jsonify({"message": "Invalid payment data"}), 400
     payment.paid = True
     db.session.commit()
+    socketio.emit(f'payment-confirmed-{payment.id}')
     return jsonify({"message": "The payment has been confirmed"})
 
 @app.route('/payments/pix/<int:payment_id>', methods=['GET'])
 def payment_pix_page(payment_id):
     payment = Payment.query.get(payment_id)
+    if payment.paid:
+        return render_template('confirmed_payment.html',
+                               payment_id=payment.id,
+                               value=payment.value,
+                               host="http://127.0.0.1:5000",
+                               qrcode=payment.qrcode
+                               )
     return render_template('payment.html',
                            payment_id=payment.id,
                            value=payment.value,
